@@ -1,24 +1,22 @@
-
-import Groq from "groq-sdk";
-
-const groq = new Groq({
-  apiKey: "YOUR_GROQ_API_KEY",
-  dangerouslyAllowBrowser: true,
-});
-
 async function run(prompt) {
-  const result = await groq.chat.completions.create({
-    messages: [
-      {
-        role: "system",
-        content: "You are Pradeep's AI assistant. Reply briefly in Hindi, Hinglish, or English according to the user.",
-      },
-      { role: "user", content: prompt },
-    ],
-    model: "openai/gpt-oss-120b",
-  });
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
 
-  return result.choices[0]?.message?.content || "No response received.";
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "AI request failed");
+    }
+
+    return data.answer;
+  } catch (error) {
+    console.error("AI Error:", error);
+    return "Sorry, AI service mein error aa gaya hai.";
+  }
 }
 
 export default run;
